@@ -159,51 +159,35 @@ describe('ios project parser', function () {
                 parser.update_www();
                 expect(fs.readFileSync(path.join(ios_project_path, 'www', 'cordova.js'), 'utf-8')).toBe(fs.readFileSync(path.join(util.libDirectory, 'cordova-ios', 'CordovaLib', 'cordova.ios.js'), 'utf-8'));
             });
-            it('should call out to util.deleteSvnFolders', function () {
-                var spy = spyOn(util, 'deleteSvnFolders');
-                parser.update_www();
-                expect(spy).toHaveBeenCalled();
-            });
         });
 
         describe('update_overrides method', function () {
+            var merges_path = path.join(project_path, 'merges', 'ios');
+            shell.mkdir('-p', merges_path);
+            var newFile = path.join(merges_path, 'merge.js');
+            beforeEach(function() {
+                fs.writeFileSync(newFile, 'alert("sup ios only!");', 'utf-8');
+            });
+            afterEach(function() {
+                shell.rm('-rf', path.join(merges_path, 'merge.js'));
+            });
 
             it('should copy a new file from merges into www', function () {
-
-                var newFile = path.join(project_path, 'merges', 'ios', 'merge.js');
-
-                this.after(function () {
-                    shell.rm('-rf', path.join(project_path, 'merges','ios','merge.js'));
-                });
-
-                fs.writeFileSync(newFile, 'alert("sup");', 'utf-8');
                 parser.update_overrides();
                 expect(fs.existsSync(path.join(ios_project_path, 'www', 'merge.js'))).toBe(true);
             });
 
             it('should copy a file from merges over a file in www', function () {
-
-                var newFile = path.join(project_path, 'merges', 'ios', 'merge.js');
                 var newFileWWW = path.join(project_path, 'www', 'merge.js');
-
+                fs.writeFileSync(newFileWWW, 'var foo=1;', 'utf-8');
                 this.after(function () {
-                    shell.rm('-rf', path.join(project_path, 'merges','ios','merge.js'));
-                    shell.rm('-rf', path.join(project_path, 'www', 'merge.js'));
+                    shell.rm('-rf', newFileWWW);
                 });
 
-                fs.writeFileSync(newFile, 'var foo=2;', 'utf-8');
-                fs.writeFileSync(newFileWWW, 'var foo=1;', 'utf-8');
                 parser.update_overrides();
                 expect(fs.existsSync(path.join(ios_project_path, 'www', 'merge.js'))).toBe(true);
-                expect(fs.readFileSync(path.join(ios_project_path, 'www', 'merge.js'), 'utf-8')).toEqual('var foo=2;');
+                expect(fs.readFileSync(path.join(ios_project_path, 'www', 'merge.js'), 'utf-8')).toEqual('alert("sup ios only!");');
             });
-
-            it('should call out to util.deleteSvnFolders', function() {
-                var spy = spyOn(util, 'deleteSvnFolders');
-                parser.update_overrides();
-                expect(spy).toHaveBeenCalled();
-            });
-
         });
 
         describe('update_project method', function () {
@@ -218,6 +202,13 @@ describe('ios project parser', function () {
                 var spyConfig = spyOn(parser, 'update_from_config').andCallThrough();
                 parser.update_project(config, function () {
                     expect(spyConfig).toHaveBeenCalled();
+                    done();
+                });
+            });
+            it('should call out to util.deleteSvnFolders', function(done) {
+                var spy = spyOn(util, 'deleteSvnFolders');
+                parser.update_project(config, function() {
+                    expect(spy).toHaveBeenCalled();
                     done();
                 });
             });

@@ -1,4 +1,3 @@
-
 /**
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
@@ -170,51 +169,34 @@ describe('android project parser', function() {
                 parser.update_www();
                 expect(fs.readFileSync(path.join(android_project_path, 'assets', 'www', 'cordova.js'),'utf-8')).toBe(fs.readFileSync(path.join(util.libDirectory, 'cordova-android', 'framework', 'assets', 'js', 'cordova.android.js'), 'utf-8'));
             });
-            it('should call out to util.deleteSvnFolders', function() {
-                var spy = spyOn(util, 'deleteSvnFolders');
-                parser.update_www();
-                expect(spy).toHaveBeenCalled();
-            });
         });
 
         describe('update_overrides method',function() {
+            var merges_path = path.join(project_path, 'merges', 'android');
+            shell.mkdir('-p', merges_path);
+            var newFile = path.join(merges_path, 'merge.js');
+            beforeEach(function() {
+                fs.writeFileSync(newFile, 'alert("sup android only!");', 'utf-8');
+            });
+            afterEach(function() {
+                shell.rm('-rf', path.join(merges_path, 'merge.js'));
+            });
 
             it('should copy a new file from merges into www', function() {
-
-                var newFile = path.join(project_path, 'merges','android', 'merge.js');
-
-                this.after(function() {
-                    shell.rm('-rf', path.join(project_path, 'merges','android','merge.js'));
-                });
-
-                fs.writeFileSync(newFile, 'alert("sup");', 'utf-8');
                 parser.update_overrides();
                 expect(fs.existsSync(path.join(android_project_path, 'assets', 'www', 'merge.js'))).toBe(true);
             });
 
             it('should copy a file from merges over a file in www', function() {
-
-                var newFile = path.join(project_path, 'merges','android', 'merge.js');
                 var newFileWWW = path.join(project_path, 'www','merge.js');
-
+                fs.writeFileSync(newFileWWW, 'var foo=1;', 'utf-8');
                 this.after(function() {
-                    shell.rm('-rf', path.join(project_path, 'merges','android','merge.js'));
-                    shell.rm('-rf',path.join(project_path,'www','merge.js'));
+                    shell.rm('-rf', newFileWWW);
                 });
 
-                fs.writeFileSync(newFile, 'var foo=2;', 'utf-8');
-                fs.writeFileSync(newFileWWW, 'var foo=1;', 'utf-8');
                 parser.update_overrides();
                 expect(fs.existsSync(path.join(android_project_path, 'assets', 'www', 'merge.js'))).toBe(true);
-                console.log(fs.readFileSync(path.join(android_project_path, 'assets', 'www', 'merge.js')));
-                expect(fs.readFileSync(path.join(android_project_path, 'assets', 'www', 'merge.js'),'utf-8')).toEqual('var foo=2;');
-            });
-
-
-            it('should call out to util.deleteSvnFolders', function() {
-                var spy = spyOn(util, 'deleteSvnFolders');
-                parser.update_overrides();
-                expect(spy).toHaveBeenCalled();
+                expect(fs.readFileSync(path.join(android_project_path, 'assets', 'www', 'merge.js'),'utf-8')).toEqual('alert("sup android only!");');
             });
         });
 
@@ -228,6 +210,16 @@ describe('android project parser', function() {
                 var spyConfig = spyOn(parser, 'update_from_config');
                 parser.update_project(config);
                 expect(spyConfig).toHaveBeenCalled();
+            });
+            it('should invoke update_overrides', function() {
+                var spyOverrides = spyOn(parser, 'update_overrides');
+                parser.update_project(config);
+                expect(spyOverrides).toHaveBeenCalled();
+            });
+            it('should call deleteSvnFolders', function() {
+                var spySvn = spyOn(util, 'deleteSvnFolders');
+                parser.update_project(config);
+                expect(spySvn).toHaveBeenCalled();
             });
         });
     });

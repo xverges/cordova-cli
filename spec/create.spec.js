@@ -18,6 +18,10 @@ describe('create command', function () {
         expect(fs.lstatSync(dotc).isFile()).toBe(true);
         expect(JSON.parse(fs.readFileSync(dotc, 'utf8')).name).toBe("HelloCordova");
         var hooks = path.join(tempDir, '.cordova', 'hooks');
+        var www = path.join(tempDir, 'www');
+        expect(fs.existsSync(www)).toBe(true);
+        var merges = path.join(tempDir, 'merges');
+        expect(fs.existsSync(merges)).toBe(true);
         expect(fs.existsSync(hooks)).toBe(true);
         expect(fs.existsSync(path.join(hooks, 'before_platform_add'))).toBe(true);
         expect(fs.existsSync(path.join(hooks, 'before_prepare'))).toBe(true);

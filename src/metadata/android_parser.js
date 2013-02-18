@@ -16,6 +16,7 @@
     specific language governing permissions and limitations
     under the License.
 */
+
 var fs            = require('fs'),
     path          = require('path'),
     et            = require('elementtree'),
@@ -139,26 +140,23 @@ module.exports.prototype = {
         // write out android lib's cordova.js
         var jsPath = path.join(util.libDirectory, 'cordova-android', 'framework', 'assets', 'js', 'cordova.android.js');
         fs.writeFileSync(path.join(platformWww, 'cordova.js'), fs.readFileSync(jsPath, 'utf-8'), 'utf-8');
-
-        // delete any .svn folders copied over
-        util.deleteSvnFolders(platformWww);
     },
 
     // update the overrides folder into the www folder
     update_overrides:function() {
         var projectRoot = util.isCordova(this.path);
-        var project_www = path.join(this.path, 'assets','www');
-        var overrides = path.join(projectRoot, 'merges','android');
-        shell.cp('-rf', overrides+'/*',project_www);
-
-        // delete any .svn folders copied over
-        util.deleteSvnFolders(project_www);
+        var overrides = path.join(projectRoot, 'merges', 'android');
+        if (fs.existsSync(overrides)) {
+            shell.cp('-rf', path.join(overrides, '*'), this.www_dir());
+        }
     },
 
     update_project:function(cfg, callback) {
         this.update_from_config(cfg);
         this.update_www();
         this.update_overrides();
+        // delete any .svn folders copied over
+        util.deleteSvnFolders(this.www_dir());
         if (callback) callback();
     }
 };

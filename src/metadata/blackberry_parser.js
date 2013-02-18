@@ -16,6 +16,7 @@
     specific language governing permissions and limitations
     under the License.
 */
+
 var fs            = require('fs'),
     path          = require('path'),
     et            = require('elementtree'),
@@ -61,9 +62,10 @@ module.exports.prototype = {
     update_project:function(cfg, callback) {
         var self = this;
 
-        self.update_from_config(cfg);
-        self.update_www();
-        self.update_overrides();
+        this.update_from_config(cfg);
+        this.update_www();
+        this.update_overrides();
+        util.deleteSvnFolders(this.www_dir());
 
         // Do we have BB config?
         var projectRoot = util.isCordova(this.path);
@@ -77,10 +79,11 @@ module.exports.prototype = {
                 if (callback) callback();
             });
             return;
+        } else {
+            // Write out config stuff to project.properties file
+            this.write_project_properties();
+            if (callback) callback();
         }
-        // Write out config stuff to project.properties file
-        this.write_project_properties();
-        if (callback) callback();
     },
 
     // Returns the platform-specific www directory.
@@ -91,7 +94,7 @@ module.exports.prototype = {
     update_www:function() {
         var projectRoot = util.isCordova(this.path);
         var www = path.join(projectRoot, 'www');
-        var platformWww = path.join(this.path, 'www');
+        var platformWww = this.www_dir();
 
         var finalWww = path.join(this.path, 'finalwww');
         shell.mkdir('-p', finalWww);
@@ -119,21 +122,19 @@ module.exports.prototype = {
         // Delete the old platform www, and move the final project over
         shell.rm('-rf', platformWww);
         shell.mv(finalWww, platformWww);
-
-        util.deleteSvnFolders(platformWww);
     },
 
     // update the overrides folder into the www folder
     update_overrides:function() {
         var projectRoot = util.isCordova(this.path);
         var platformWww = path.join(this.path, 'www');
-        var overrides = path.join(projectRoot, 'merges','blackberry');
-        shell.cp('-rf', overrides+'/*',platformWww);
-        util.deleteSvnFolders(platformWww);
+        var overrides = path.join(projectRoot, 'merges', 'blackberry');
+        if (fs.existsSync(overrides)) {
+            shell.cp('-rf', path.join(overrides, '*'), platformWww);
+        }
     },
 
     write_project_properties:function() {
-        // TODO: eventually support all blackberry sub-platforms
         var projectRoot = util.isCordova(this.path);
 
         var projFile = path.join(this.path, 'project.properties');
@@ -151,7 +152,6 @@ module.exports.prototype = {
         fs.writeFileSync(projFile, props, 'utf-8');
     },
     get_blackberry_environment:function(callback) {
-        // TODO: add other blackberry sub-platforms
         var projectRoot = util.isCordova(this.path);
         var dotFile = path.join(projectRoot, '.cordova', 'config.json');
         var dot = JSON.parse(fs.readFileSync(dotFile, 'utf-8'));

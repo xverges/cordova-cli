@@ -16,6 +16,7 @@
     specific language governing permissions and limitations
     under the License.
 */
+
 var fs            = require('fs'),
     path          = require('path'),
     xcode         = require('xcode'),
@@ -140,29 +141,24 @@ module.exports.prototype = {
     update_www:function() {
         var projectRoot = util.isCordova(this.path);
         var www = path.join(projectRoot, 'www');
-        var project_www = path.join(this.path, 'www');
 
         // remove the stock www folder
-        shell.rm('-rf', project_www);
+        shell.rm('-rf', this.www_dir());
 
         // copy over project www assets
         shell.cp('-rf', www, this.path);
 
         // write out proper cordova.js
-        shell.cp('-f', path.join(util.libDirectory, 'cordova-ios', 'CordovaLib', 'cordova.ios.js'), path.join(project_www, 'cordova.js'));
-
-        util.deleteSvnFolders(project_www);
+        shell.cp('-f', path.join(util.libDirectory, 'cordova-ios', 'CordovaLib', 'cordova.ios.js'), path.join(this.www_dir(), 'cordova.js'));
     },
 
     // update the overrides folder into the www folder
     update_overrides:function() {
         var projectRoot = util.isCordova(this.path);
-        var project_www = path.join(this.path, 'www');
-        var overrides = path.join(projectRoot, 'merges','ios');
-        shell.cp('-rf', overrides+'/*',project_www);
-
-        util.deleteSvnFolders(project_www);
-
+        var overrides = path.join(projectRoot, 'merges', 'ios');
+        if (fs.existsSync(overrides)) {
+            shell.cp('-rf', path.join(overrides, '*'), this.www_dir());
+        }
     },
 
     update_project:function(cfg, callback) {
@@ -170,6 +166,7 @@ module.exports.prototype = {
         this.update_from_config(cfg, function() {
             self.update_www();
             self.update_overrides();
+            util.deleteSvnFolders(self.www_dir());
             if (callback) callback();
         });
     }
