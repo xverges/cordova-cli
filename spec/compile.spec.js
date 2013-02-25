@@ -21,10 +21,6 @@ var cordova = require('../cordova'),
     shell = require('shelljs'),
     path = require('path'),
     fs = require('fs'),
-    config_parser = require('../src/config_parser'),
-    android_parser = require('../src/metadata/android_parser'),
-    ios_parser = require('../src/metadata/ios_parser'),
-    blackberry_parser = require('../src/metadata/blackberry_parser'),
     hooker = require('../src/hooker'),
     fixtures = path.join(__dirname, 'fixtures'),
     hooks = path.join(fixtures, 'hooks'),
@@ -49,15 +45,15 @@ describe('compile command', function() {
             cordova.compile();
         }).toThrow();
     });
-    
+
     it('should run inside a Cordova-based project with at least one added platform', function() {
         // move platform project fixtures over to fake cordova into thinking platforms were added
         // TODO: possibly add this to helper?
-        shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), path.join(tempDir));
+        shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), path.join(tempDir));
         shell.mv('-f', path.join(cordova_project, 'platforms', 'ios'), path.join(tempDir));
         this.after(function() {
             process.chdir(cwd);
-            shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms', 'blackberry'));
+            shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms', 'blackberry10'));
             shell.mv('-f', path.join(tempDir, 'ios'), path.join(cordova_project, 'platforms', 'ios'));
         });
 
@@ -91,12 +87,12 @@ describe('compile command', function() {
 
         describe('when platforms are added', function() {
             beforeEach(function() {
-                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), path.join(tempDir));
+                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), path.join(tempDir));
                 shell.mv('-f', path.join(cordova_project, 'platforms', 'ios'), path.join(tempDir));
                 process.chdir(cordova_project);
             });
             afterEach(function() {
-                shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms', 'blackberry'));
+                shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms', 'blackberry10'));
                 shell.mv('-f', path.join(tempDir, 'ios'), path.join(cordova_project, 'platforms', 'ios'));
                 process.chdir(cwd);
             });
@@ -139,7 +135,7 @@ describe('compile command', function() {
         afterEach(function() {
             process.chdir(cwd);
         });
-       
+
         describe('Android', function() {
             it('should shell out to build command on Android', function() {
                 var s = spyOn(require('shelljs'), 'exec').andReturn({code:0});
@@ -155,12 +151,12 @@ describe('compile command', function() {
                 expect(s.mostRecentCall.args[0].match(/\/cordova\/build/)).not.toBeNull();
             });
         });
-        describe('BlackBerry', function() {
-            it('should shell out to ant command on blackberry', function() {
+        describe('BlackBerry 10', function() {
+            it('should shell out to build command on blackberry 10', function() {
                 var s = spyOn(shell, 'exec');
-                cordova.compile('blackberry');
+                cordova.compile('blackberry10');
                 expect(s).toHaveBeenCalled();
-                expect(s.mostRecentCall.args[0]).toMatch(/ant -f .*build\.xml" qnx load-device/);
+                expect(s.mostRecentCall.args[0].match(/\/cordova\/build/)).not.toBeNull();
             });
         });
         it('should not treat a .gitignore file as a platform', function() {

@@ -24,7 +24,7 @@ var cordova = require('../cordova'),
     config_parser = require('../src/config_parser'),
     android_parser = require('../src/metadata/android_parser'),
     ios_parser = require('../src/metadata/ios_parser'),
-    blackberry_parser = require('../src/metadata/blackberry_parser'),
+    blackberry10_parser = require('../src/metadata/blackberry10_parser'),
     hooker = require('../src/hooker'),
     fixtures = path.join(__dirname, 'fixtures'),
     hooks = path.join(fixtures, 'hooks'),
@@ -54,10 +54,10 @@ describe('prepare command', function() {
     it('should run inside a Cordova-based project with at least one added platform', function() {
         // move platform project fixtures over to fake cordova into thinking platforms were added
         // TODO: possibly add this to helper?
-        shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), path.join(tempDir));
+        shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), path.join(tempDir));
         this.after(function() {
             process.chdir(cwd);
-            shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms', 'blackberry'));
+            shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms', 'blackberry10'));
         });
 
         process.chdir(cordova_project);
@@ -91,12 +91,12 @@ describe('prepare command', function() {
 
         describe('when platforms are added', function() {
             beforeEach(function() {
-                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), path.join(tempDir));
+                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), path.join(tempDir));
                 shell.mv('-f', path.join(cordova_project, 'platforms', 'ios'), path.join(tempDir));
                 process.chdir(cordova_project);
             });
             afterEach(function() {
-                shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms', 'blackberry'));
+                shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms', 'blackberry10'));
                 shell.mv('-f', path.join(tempDir, 'ios'), path.join(cordova_project, 'platforms', 'ios'));
                 process.chdir(cwd);
             });

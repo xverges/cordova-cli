@@ -95,11 +95,11 @@ describe('plugin command', function() {
             it('should throw if plugin does not support any app platforms', function() {
                 process.chdir(cordova_project);
                 shell.mv('-f', path.join(cordova_project, 'platforms', 'android'), tempDir);
-                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), tempDir);
+                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), tempDir);
                 this.after(function() {
                     process.chdir(cwd);
                     shell.mv('-f', path.join(tempDir, 'android'), path.join(cordova_project, 'platforms'));
-                    shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms'));
+                    shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms'));
                 });
                 expect(function() {
                     cordova.plugin('add', androidPlugin);

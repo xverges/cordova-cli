@@ -24,7 +24,7 @@ var cordova_util      = require('./util'),
     shell             = require('shelljs'),
     et                = require('elementtree'),
     android_parser    = require('./metadata/android_parser'),
-    blackberry_parser = require('./metadata/blackberry_parser'),
+    blackberry_parser = require('./metadata/blackberry10_parser'),
     ios_parser        = require('./metadata/ios_parser'),
     hooker            = require('./hooker'),
     n                 = require('ncallbacks'),
@@ -33,14 +33,7 @@ var cordova_util      = require('./util'),
 
 
 function shell_out_to_debug(projectRoot, platform, callback) {
-    var cmd = path.join(projectRoot, 'platforms', platform);
-    // TODO: this is bb10 only for now
-    // TODO: PLATFORM LIBRARY INCONSISTENCY
-    if (platform == 'blackberry') {
-        cmd = 'ant -f "' + path.join(cmd, 'build.xml') + '" qnx load-device';
-    } else {
-        cmd = '"' + path.join(cmd, 'cordova', 'build') + '"';
-    }
+    var cmd = '"' + path.join(projectRoot, 'platforms', platform, 'cordova', 'build') + '"';
     shell.exec(cmd, {silent:true, async:true}, function(code, output) {
         if (code > 0) {
             throw new Error('An error occurred while building the ' + platform + ' project. ' + output);
@@ -49,7 +42,6 @@ function shell_out_to_debug(projectRoot, platform, callback) {
         }
     });
 }
-
 
 module.exports = function compile(platforms, callback) {
     var projectRoot = cordova_util.isCordova(process.cwd());

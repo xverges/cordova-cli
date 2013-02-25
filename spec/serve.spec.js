@@ -25,10 +25,7 @@ var cordova = require('../cordova'),
     util = require('../src/util'),
     hooker = require('../src/hooker'),
     tempDir = path.join(__dirname, '..', 'temp'),
-    http = require('http'),
-    android_parser = require('../src/metadata/android_parser'),
-    ios_parser = require('../src/metadata/ios_parser'),
-    blackberry_parser = require('../src/metadata/blackberry_parser');
+    http = require('http');
 
 var cwd = process.cwd();
 

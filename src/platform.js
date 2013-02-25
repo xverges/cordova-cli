@@ -16,22 +16,22 @@
     specific language governing permissions and limitations
     under the License.
 */
-var config_parser     = require('./config_parser'),
-    cordova_util      = require('./util'),
-    util              = require('util'),
-    fs                = require('fs'),
-    path              = require('path'),
-    hooker            = require('./hooker'),
-    n                 = require('ncallbacks'),
-    android_parser    = require('./metadata/android_parser'),
-    ios_parser        = require('./metadata/ios_parser'),
-    blackberry_parser = require('./metadata/blackberry_parser'),
-    shell             = require('shelljs');
+var config_parser       = require('./config_parser'),
+    cordova_util        = require('./util'),
+    util                = require('util'),
+    fs                  = require('fs'),
+    path                = require('path'),
+    hooker              = require('./hooker'),
+    n                   = require('ncallbacks'),
+    android_parser      = require('./metadata/android_parser'),
+    ios_parser          = require('./metadata/ios_parser'),
+    blackberry10_parser = require('./metadata/blackberry10_parser'),
+    shell               = require('shelljs');
 
 var parsers = {
-    "android":android_parser,
-    "ios":ios_parser,
-    "blackberry":blackberry_parser
+    "android": android_parser,
+    "ios": ios_parser,
+    "blackberry10": blackberry10_parser
 };
 
 module.exports = function platform(command, targets, callback) {
@@ -66,7 +66,6 @@ module.exports = function platform(command, targets, callback) {
             hooks.fire('before_platform_ls');
             hooks.fire('after_platform_ls');
             return fs.readdirSync(path.join(projectRoot, 'platforms'));
-            break;
         case 'add':
             targets.forEach(function(target) {
                 hooks.fire('before_platform_add');
@@ -84,15 +83,19 @@ module.exports = function platform(command, targets, callback) {
                     } else {
                         // Create a platform app using the ./bin/create scripts that exist in each repo.
                         // TODO: eventually refactor to allow multiple versions to be created.
+                        // TODO: move creation into the platform parser to avoid this mess
                         // Run platform's create script
-                        var bin = path.join(cordova_util.libDirectory, 'cordova-' + target, 'bin', 'create');
+                        var bin = path.join(
+                                cordova_util.libDirectory,
+                                'cordova-' + (target === 'blackberry10' ? 'blackberry/blackberry10' : target),
+                                'bin',
+                                'create');
                         var pkg = cfg.packageName().replace(/[^\w.]/g,'_');
                         var name = cfg.name().replace(/\W/g,'_');
-                        // TODO: PLATFORM LIBRARY INCONSISTENCY: order/number of arguments to create
                         // TODO: keep tabs on CB-2300
-                        var command = util.format('"%s" "%s" "%s" "%s"', bin, output, (target=='blackberry'?name:pkg), name);
+                        var command = util.format('"%s" "%s" "%s" "%s"', bin, output, pkg, name);
 
-                        shell.exec(command, {silent:true,async:true}, function(code, create_output) {
+                        shell.exec(command, {silent:false,async:true}, function(code, create_output) {
                             if (code > 0) {
                                 throw new Error('An error occured during creation of ' + target + ' sub-project. ' + create_output);
                             }

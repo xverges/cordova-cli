@@ -24,7 +24,7 @@ var cordova = require('../cordova'),
     config_parser = require('../src/config_parser'),
     android_parser = require('../src/metadata/android_parser'),
     ios_parser = require('../src/metadata/ios_parser'),
-    blackberry_parser = require('../src/metadata/blackberry_parser'),
+    blackberry10_parser = require('../src/metadata/blackberry10_parser'),
     hooker = require('../src/hooker'),
     fixtures = path.join(__dirname, 'fixtures'),
     hooks = path.join(fixtures, 'hooks'),
@@ -50,13 +50,13 @@ describe('emulate command', function() {
             cordova.emulate();
         }).toThrow();
     });
-    
+
     it('should run inside a Cordova-based project with at least one added platform', function() {
-        shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), path.join(tempDir));
+        shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), path.join(tempDir));
         shell.mv('-f', path.join(cordova_project, 'platforms', 'ios'), path.join(tempDir));
         this.after(function() {
             process.chdir(cwd);
-            shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms', 'blackberry'));
+            shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms', 'blackberry10'));
             shell.mv('-f', path.join(tempDir, 'ios'), path.join(cordova_project, 'platforms', 'ios'));
         });
 
@@ -90,7 +90,7 @@ describe('emulate command', function() {
         afterEach(function() {
             process.chdir(cwd);
         });
-       
+
         describe('Android', function() {
             var s;
             beforeEach(function() {
@@ -121,18 +121,18 @@ describe('emulate command', function() {
                 expect(s).toHaveBeenCalled();
             });
         });
-        describe('BlackBerry', function() {
-            it('should shell out to ant command on blackberry', function() {
-                var proj_spy = spyOn(blackberry_parser.prototype, 'update_project');
+        describe('BlackBerry 10', function() {
+            it('should shell out to emulate command on blackberry 10', function() {
+                var proj_spy = spyOn(blackberry10_parser.prototype, 'update_project');
                 var s = spyOn(require('shelljs'), 'exec');
-                cordova.emulate('blackberry');
+                cordova.emulate('blackberry10');
                 proj_spy.mostRecentCall.args[1](); // update_project fake
                 expect(s).toHaveBeenCalled();
-                expect(s.mostRecentCall.args[0]).toMatch(/ant -f .*build\.xml" qnx load-simulator/);
+                expect(s.mostRecentCall.args[0].match(/\/cordova\/run/)).not.toBeNull();
             });
-            it('should call blackberry_parser\'s update_project', function() {
-                var s = spyOn(blackberry_parser.prototype, 'update_project');
-                cordova.emulate('blackberry');
+            it('should call blackberry10_parser\'s update_project', function() {
+                var s = spyOn(blackberry10_parser.prototype, 'update_project');
+                cordova.emulate('blackberry10');
                 expect(s).toHaveBeenCalled();
             });
         });
@@ -146,14 +146,14 @@ describe('emulate command', function() {
 
         describe('when platforms are added', function() {
             beforeEach(function() {
-                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry'), path.join(tempDir));
+                shell.mv('-f', path.join(cordova_project, 'platforms', 'blackberry10'), path.join(tempDir));
                 shell.mv('-f', path.join(cordova_project, 'platforms', 'ios'), path.join(tempDir));
                 sh = spyOn(shell, 'exec');
                 ap = spyOn(android_parser.prototype, 'update_project');
                 process.chdir(cordova_project);
             });
             afterEach(function() {
-                shell.mv('-f', path.join(tempDir, 'blackberry'), path.join(cordova_project, 'platforms', 'blackberry'));
+                shell.mv('-f', path.join(tempDir, 'blackberry10'), path.join(cordova_project, 'platforms', 'blackberry10'));
                 shell.mv('-f', path.join(tempDir, 'ios'), path.join(cordova_project, 'platforms', 'ios'));
                 process.chdir(cwd);
             });

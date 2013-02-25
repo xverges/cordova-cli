@@ -17,17 +17,17 @@
     under the License.
 */
 
-var path            = require('path'),
-    fs              = require('fs'),
-    shell           = require('shelljs'),
-    ls              = fs.readdirSync,
-    cordova_util    = require('./util'),
-    util            = require('util'),
-    android_parser  = require('./metadata/android_parser'),
-    blackberry_parser= require('./metadata/blackberry_parser'),
-    ios_parser      = require('./metadata/ios_parser'),
-    exec            = require('child_process').exec,
-    et              = require('elementtree');
+var path                = require('path'),
+    fs                  = require('fs'),
+    shell               = require('shelljs'),
+    ls                  = fs.readdirSync,
+    cordova_util        = require('./util'),
+    util                = require('util'),
+    android_parser      = require('./metadata/android_parser'),
+    blackberry10_parser = require('./metadata/blackberry10_parser'),
+    ios_parser          = require('./metadata/ios_parser'),
+    exec                = require('child_process').exec,
+    et                  = require('elementtree');
 
 
 // Called during cordova prepare.
@@ -87,8 +87,8 @@ module.exports = function plugin_loader(platform) {
         case 'ios':
             parser = new ios_parser(path.join(projectRoot, 'platforms', 'ios'));
             break;
-        case 'blackberry':
-            parser = new blackberry_parser(path.join(projectRoot, 'platforms', 'blackberry'));
+        case 'blackberry10':
+            parser = new blackberry10_parser(path.join(projectRoot, 'platforms', 'blackberry10'));
             break;
     }
 

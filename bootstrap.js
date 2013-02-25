@@ -20,22 +20,22 @@
  * Runs through any bs to make sure the libraries and tests are good to go.
  **/
 
-var util      = require('./src/util'),
-    create    = require('./src/create'),
-    a_parser  = require('./src/metadata/android_parser'),
-    b_parser  = require('./src/metadata/blackberry_parser'),
-    i_parser  = require('./src/metadata/ios_parser'),
-    n         = require('ncallbacks'),
-    path      = require('path'),
-    fs        = require('fs'),
-    shell     = require('shelljs'),
-    platforms = require('./platforms');
+var util       = require('./src/util'),
+    create     = require('./src/create'),
+    a_parser   = require('./src/metadata/android_parser'),
+    b10_parser = require('./src/metadata/blackberry10_parser'),
+    i_parser   = require('./src/metadata/ios_parser'),
+    n          = require('ncallbacks'),
+    path       = require('path'),
+    fs         = require('fs'),
+    shell      = require('shelljs'),
+    platforms  = require('./platforms');
 
 // Library requirements checkers
 var min_reqs = {
     "android":a_parser.check_requirements,
     "ios":i_parser.check_requirements,
-    "blackberry":b_parser.check_requirements
+    "blackberry10":b10_parser.check_requirements
 }
 
 // Create native projects using bin/create
@@ -74,10 +74,12 @@ platforms.forEach(function(platform) {
         } else {
             console.log('SUCCESS: Minimum requirements for ' + platform + ' met.');
             var fix_path = path.join(tempDir, platform + '_fixture');
-            var create = path.join(util.libDirectory, 'cordova-' + platform, 'bin', 'create'); 
+            var create = path.join(util.libDirectory,
+                    'cordova-' + (platform === 'blackberry10' ? 'blackberry/blackberry10' : platform),
+                    'bin',
+                    'create');
             console.log('BOOTSTRAPPING ' + platform + '...');
             var cmd = create + ' "' + fix_path + '" org.apache.cordova.cordovaExample cordovaExample';
-            if (platform == 'blackberry') cmd = create + ' "' + fix_path + '" cordovaExample';
             shell.exec(cmd, {silent:true, async:true}, function(code, output) {
                 if (code > 0) {
                     console.error('ERROR! Could not create a native ' + platform + ' project test fixture. See below for error output.');

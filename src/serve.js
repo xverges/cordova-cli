@@ -23,7 +23,7 @@ var cordova_util = require('./util'),
     config_parser = require('./config_parser'),
     android_parser = require('./metadata/android_parser'),
     ios_parser = require('./metadata/ios_parser'),
-    blackberry_parser = require('./metadata/blackberry_parser'),
+    blackberry_parser = require('./metadata/blackberry10_parser'),
     fs = require('fs'),
     util = require('util'),
     http = require("http"),
@@ -103,9 +103,9 @@ module.exports.config = function (platform, port, callback) {
     var platforms = cordova_util.listPlatforms(projectRoot);
     if (!platform) {
         throw new Error('You need to specify a platform.');
-    } else if (platforms.length == 0) {
+    } else if (platforms.length === 0) {
         throw new Error('No platforms to serve.');
-    } else if (platforms.filter(function(x) { return x == platform }).length == 0) {
+    } else if (platforms.filter(function(x) { return x == platform; }).length === 0) {
         throw new Error(platform + ' is not an installed platform.');
     }
 
@@ -126,8 +126,15 @@ module.exports.config = function (platform, port, callback) {
         case 'android':
             parser = new android_parser(path.join(projectRoot, 'platforms', platform));
             break;
-        case 'blackberry-10':
-            parser = new blackberry_parser(path.join(projectRoot, 'platforms', platform));
+        case 'blackberry10':
+            platformPath = path.join(projectRoot, 'platforms', 'blackberry10');
+            parser = new blackberry_parser(platformPath);
+
+            // Update the related platform project from the config
+            parser.update_project(cfg, function() {
+                // Shell it
+                returnValue.server = launch_server(www, parser.www_dir(), port);
+            });
             break;
         case 'ios':
             parser = new ios_parser(path.join(projectRoot, 'platforms', platform));
@@ -139,4 +146,4 @@ module.exports.config = function (platform, port, callback) {
         result.paths.push(parser.www_dir());
         callback(result);
     });
-}
+};

@@ -16,33 +16,31 @@
     specific language governing permissions and limitations
     under the License.
 */
-var cordova_util      = require('./util'),
-    path              = require('path'),
-    shell             = require('shelljs'),
-    config_parser     = require('./config_parser'),
-    android_parser    = require('./metadata/android_parser'),
-    ios_parser        = require('./metadata/ios_parser'),
-    blackberry_parser = require('./metadata/blackberry_parser'),
-    platform          = require('./platform'),
-    fs                = require('fs'),
-    ls                = fs.readdirSync,
-    n                 = require('ncallbacks'),
-    hooker            = require('../src/hooker'),
-    util              = require('util');
+var cordova_util        = require('./util'),
+    path                = require('path'),
+    shell               = require('shelljs'),
+    config_parser       = require('./config_parser'),
+    android_parser      = require('./metadata/android_parser'),
+    ios_parser          = require('./metadata/ios_parser'),
+    blackberry10_parser = require('./metadata/blackberry10_parser'),
+    platform            = require('./platform'),
+    fs                  = require('fs'),
+    ls                  = fs.readdirSync,
+    n                   = require('ncallbacks'),
+    hooker              = require('../src/hooker'),
+    util                = require('util');
 
 var parsers = {
-    "android":android_parser,
-    "ios":ios_parser,
-    "blackberry":blackberry_parser
+    "android": android_parser,
+    "ios": ios_parser,
+    "blackberry10": blackberry10_parser
 };
 
 function shell_out_to_emulate(root, platform, callback) {
-    var cmd = '"' + path.join(root, 'platforms', platform, 'cordova', 'emulate') + '"';
-    // TODO: PLATFORM LIBRARY INCONSISTENCY 
-    if (platform == 'blackberry') {
-        cmd = 'ant -f "' + path.join(root, 'platforms', platform, 'build.xml') + '" qnx load-simulator';
-    } else if (platform.indexOf('android') > -1) {
-        cmd = '"' + path.join(root, 'platforms', platform, 'cordova', 'run') + '"';
+    var cmd = "'" + path.join(root, 'platforms', platform, 'cordova', 'emulate') + "'";
+    // TODO: PLATFORM LIBRARY INCONSISTENCY
+    if (platform.indexOf('android') > -1 || platform.indexOf('blackberry10') > -1) {
+        cmd = "'"  + path.join(root, 'platforms', platform, 'cordova', 'run') + "'";
     }
     shell.exec(cmd, {silent:true, async:true}, function(code, output) {
         if (code > 0) {

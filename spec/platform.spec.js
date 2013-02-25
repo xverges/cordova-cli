@@ -27,11 +27,11 @@ var cordova = require('../cordova'),
     util = require('../src/util'),
     hooker = require('../src/hooker'),
     platforms = require('../platforms'),
-    tempDir = path.join(__dirname, '..', 'temp');
+    tempDir = path.join(__dirname, '..', 'temp'),
     android_parser = require('../src/metadata/android_parser'),
     ios_parser = require('../src/metadata/ios_parser'),
     cordova_project = path.join(__dirname, 'fixtures', 'projects', 'cordova'),
-    blackberry_parser = require('../src/metadata/blackberry_parser');
+    blackberry10_parser = require('../src/metadata/blackberry10_parser');
 
 var cwd = process.cwd();
 
@@ -66,7 +66,7 @@ describe('platform command', function() {
         }).toThrow();
     });
 
-    describe('`ls`', function() { 
+    describe('`ls`', function() {
         beforeEach(function() {
             process.chdir(cordova_project);
         });
@@ -157,33 +157,35 @@ describe('platform command', function() {
                 expect(s).toHaveBeenCalled();
             });
         });
-        describe('blackberry', function() {
+        describe('blackberry10', function() {
             var sh, cr;
             var fake_reqs_check = function() {
                 cr.mostRecentCall.args[0](false);
             };
             var fake_create = function(a_path) {
                 shell.mkdir('-p', path.join(a_path, 'www'));
-                fs.writeFileSync(path.join(a_path, 'project.properties'), 'hi', 'utf-8');
-                fs.writeFileSync(path.join(a_path, 'build.xml'), 'hi', 'utf-8');
+                fs.writeFileSync(path.join(a_path, 'project.json'), {
+                    "appname":"blah",
+                    "targets":{}
+                }.toString(), 'utf-8');
                 shell.cp(path.join(cordova_project, 'www', 'config.xml'), path.join(a_path, 'www', 'config.xml'));
                 sh.mostRecentCall.args[2](0, '');
             };
-            beforeEach(function() {
+            beforeEach(function () {
                 sh = spyOn(shell, 'exec');
-                cr = spyOn(blackberry_parser, 'check_requirements');
+                cr = spyOn(blackberry10_parser, 'check_requirements');
             });
-            it('should shell out to blackberry bin/create', function() {
-                cordova.platform('add', 'blackberry');
+            it('should shell out to blackberry10 bin/create', function() {
+                cordova.platform('add', 'blackberry10');
                 fake_reqs_check();
                 var shell_cmd = sh.mostRecentCall.args[0];
-                expect(shell_cmd).toMatch(/blackberry\/bin\/create/);
+                expect(shell_cmd).toMatch(/blackberry10\/bin\/create/);
             });
-            it('should call blackberry_parser\'s update_project', function() {
-                var s = spyOn(blackberry_parser.prototype, 'update_project');
-                cordova.platform('add', 'blackberry');
+            it('should call blackberry10_parser\'s update_project', function() {
+                var s = spyOn(blackberry10_parser.prototype, 'update_project');
+                cordova.platform('add', 'blackberry10');
                 fake_reqs_check();
-                fake_create(path.join(tempDir, 'platforms', 'blackberry'));
+                fake_create(path.join(tempDir, 'platforms', 'blackberry10'));
                 expect(s).toHaveBeenCalled();
             });
         });
@@ -199,24 +201,47 @@ describe('platform command', function() {
         });
     });
 
-    describe('`remove`',function() { 
-        beforeEach(function() {
-            process.chdir(cordova_project);
-            shell.cp('-rf', path.join(cordova_project, 'platforms' ,'*'), tempDir);
-        });
-
-        afterEach(function() {
-            process.chdir(cwd);
-            shell.cp('-rf', path.join(tempDir, '*'), path.join(cordova_project, 'platforms')); 
-        });
-
+    describe('`remove`',function() {
         it('should remove a supported and added platform', function() {
-            cordova.platform('remove', 'android');
-            expect(cordova.platform('ls').length).toEqual(2);
+            process.chdir(cordova_project);
+
+            var initial = cordova.platform('ls').length,
+                done = jasmine.createSpy();
+
+            expect(initial).toEqual(3);
+
+            cordova.platform('remove', 'blackberry10');
+            expect(cordova.platform('ls').length).toEqual(initial - 1);
+
+            cordova.platform('add', 'blackberry10', done);
+
+            waitsFor(function () {
+                return done.callCount;
+            }, "platform add blackberry10 to complete", 7500);
+
+            runs(function () {
+                expect(cordova.platform('ls').length).toEqual(initial);
+            });
         });
+
         it('should be able to remove multiple platforms', function() {
+            process.chdir(cordova_project);
+            shell.cp('-rf', path.join(cordova_project, 'platforms' ,'android'), tempDir);
+            shell.cp('-rf', path.join(cordova_project, 'platforms' ,'ios'), tempDir);
+
+            var initial = cordova.platform('ls').length;
+            expect(initial).toEqual(3);
+
             cordova.platform('remove', ['android','ios']);
-            expect(cordova.platform('ls').length).toEqual(1);
+            expect(cordova.platform('ls').length).toEqual(initial - 2);
+
+            process.chdir(cwd);
+            shell.cp('-rf', path.join(tempDir, 'android'), path.join(cordova_project, 'platforms'));
+            shell.cp('-rf', path.join(tempDir, 'ios'), path.join(cordova_project, 'platforms'));
+
+            process.chdir(cordova_project);
+            expect(cordova.platform('ls').length).toEqual(initial);
+            process.chdir(cwd);
         });
     });
 

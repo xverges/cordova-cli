@@ -16,26 +16,26 @@
     specific language governing permissions and limitations
     under the License.
 */
-var cordova_util      = require('./util'),
-    path              = require('path'),
-    config_parser     = require('./config_parser'),
-    platform          = require('./platform'),
-    fs                = require('fs'),
-    shell             = require('shelljs'),
-    et                = require('elementtree'),
-    android_parser    = require('./metadata/android_parser'),
-    blackberry_parser = require('./metadata/blackberry_parser'),
-    ios_parser        = require('./metadata/ios_parser'),
-    hooker            = require('./hooker'),
-    n                 = require('ncallbacks'),
-    prompt            = require('prompt'),
-    plugin_loader = require('./plugin_loader'),
-    util              = require('util');
+var cordova_util        = require('./util'),
+    path                = require('path'),
+    config_parser       = require('./config_parser'),
+    platform            = require('./platform'),
+    fs                  = require('fs'),
+    shell               = require('shelljs'),
+    et                  = require('elementtree'),
+    android_parser      = require('./metadata/android_parser'),
+    blackberry10_parser = require('./metadata/blackberry10_parser'),
+    ios_parser          = require('./metadata/ios_parser'),
+    hooker              = require('./hooker'),
+    n                   = require('ncallbacks'),
+    plugin_loader       = require('./plugin_loader'),
+    prompt              = require('prompt'),
+    util                = require('util');
 
 var parsers = {
     "android":android_parser,
     "ios":ios_parser,
-    "blackberry":blackberry_parser
+    "blackberry10":blackberry10_parser
 };
 
 module.exports = function prepare(platforms, callback) {
