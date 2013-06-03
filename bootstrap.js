@@ -22,11 +22,6 @@
 
 var util      = require('./src/util'),
     create    = require('./src/create'),
-    a_parser  = require('./src/metadata/android_parser'),
-    b_parser  = require('./src/metadata/blackberry_parser'),
-    i_parser  = require('./src/metadata/ios_parser'),
-    wp7_parser= require('./src/metadata/wp7_parser'),
-    wp8_parser= require('./src/metadata/wp8_parser'),
     n         = require('ncallbacks'),
     path      = require('path'),
     fs        = require('fs'),
@@ -35,11 +30,11 @@ var util      = require('./src/util'),
 
 // Library requirements checkers
 var min_reqs = {
-    "android":a_parser.check_requirements,
-    "ios":i_parser.check_requirements,
-    "blackberry":b_parser.check_requirements,
-    "wp7":wp7_parser.check_requirements,
-    "wp8":wp7_parser.check_requirements
+    "android":platforms['android'].parser.check_requirements,
+    "ios":platforms['ios'].parser.check_requirements,
+    /*"blackberry":platforms['blackberry'].parser.check_requirements,*/
+    "wp7":platforms['wp7'].parser.check_requirements,
+    "wp8":platforms['wp8'].parser.check_requirements
 }
 
 // Create native projects using bin/create
@@ -69,7 +64,7 @@ var end = n(platforms.length, function() {
     }
 });
 
-platforms.forEach(function(platform) {
+Object.keys(platforms).forEach(function(platform) {
     min_reqs[platform](function(err) {
         if (err) {
             console.error('WARNING: Your system does not meet requirements to create ' + platform + ' projects. See error output below.');
