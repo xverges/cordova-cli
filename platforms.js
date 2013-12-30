@@ -70,6 +70,11 @@ module.exports = {
         url    : 'https://git-wip-us.apache.org/repos/asf?p=cordova-windows.git',
         version: '3.3.0',
         subdirectory: 'windows8'
+    },
+    'nodewebkit':{
+        parser: './src/metadata/nodewebkit_parser',
+        url    : '/Users/xavier/code/cordova30/cordova-nodewebkit',
+        version: '3.3.0-rc1'
     }
 };
 

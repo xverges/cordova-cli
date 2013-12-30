@@ -151,7 +151,7 @@ describe('platform command', function() {
 
             it('should list out added platforms in a project', function(done) {
                 cordova.on('results', function(res) {
-                    expect(res).toMatch(/^Installed platforms: ios, android, ubuntu, amazon-fireos, wp7, wp8, blackberry10, firefoxos, windows8\s*Available platforms:\s*$/);
+                    expect(res).toMatch(/^Installed platforms: ios, android, ubuntu, amazon-fireos, wp7, wp8, blackberry10, firefoxos, windows8, nodewebkit\s*Available platforms:\s*$/);
                     done();
                 });
                 cordova.raw.platform('list');
@@ -199,7 +199,7 @@ describe('platform command', function() {
                 });
             });
             it('should use a custom template directory if there is one specified in the configuration', function(done) {
-                var template_dir = "/tmp/custom-template"
+                var template_dir = "/tmp/custom-template";
                 load.andCallThrough();
                 config_read.andReturn({
                     lib: {
